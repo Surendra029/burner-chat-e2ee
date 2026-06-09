@@ -10,8 +10,9 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-// This matches your local MongoDB Compass connection!
-mongoose.connect('mongodb://localhost:27017/burner-chat');
+// CRITICAL FIX 1: Cloud Database fallback
+const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/burner-chat';
+mongoose.connect(mongoURI);
 
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
@@ -40,6 +41,8 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(3001, () => {
-    console.log('Blind Relay Server running on port 3001');
+// CRITICAL FIX 2: Cloud Port fallback
+const PORT = process.env.PORT || 3001;
+server.listen(PORT, () => {
+    console.log(`Blind Relay Server running on port ${PORT}`);
 });
