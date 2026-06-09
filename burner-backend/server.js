@@ -12,7 +12,9 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 // CRITICAL FIX 1: Cloud Database fallback
 const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/burner-chat';
-mongoose.connect(mongoURI);
+mongoose.connect(mongoURI)
+  .then(() => console.log('✅ MongoDB Connected'))
+  .catch(err => console.error('❌ MongoDB Error:', err.message));
 
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
