@@ -2,7 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { generateKeys, exportPublicKey, encryptMessage, decryptMessage, importPublicKey } from './crypto';
 
-const socket = io('http://localhost:3001');
+// CRITICAL: Remember to change this to your Render URL before pushing to GitHub!
+// e.g., const socket = io('https://burner-backend-xyz.onrender.com');
+const socket = io('http://localhost:3001'); 
 
 function App() {
     // User State
@@ -56,11 +58,22 @@ function App() {
             const cleanKey = receiverPublicKeyBase64.replace(/["'\s]/g, "");
             const receiverKey = await importPublicKey(cleanKey);
             
+            // Encrypt the message using their public key
             const ciphertext = await encryptMessage(message, receiverKey);
             
-            socket.emit('send_message', { sender: username, receiver, ciphertext });
+            // Emit the EXACT variables that match your React state
+            socket.emit('send_message', {
+                sender: username,       // Fixed variable name
+                receiver: receiver,     // Fixed variable name
+                ciphertext: ciphertext  // Fixed variable name
+            });
+
+            // Add the message to your own screen so you know it sent!
             setChat(prev => [...prev, `Me: ${message}`]);
+            
+            // Clear the input box
             setMessage('');
+            
         } catch (error) {
             console.error(error);
             alert("Encryption failed. Check the public key format.");
