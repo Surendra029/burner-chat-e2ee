@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import { generateKeys, exportPublicKey, encryptMessage, decryptMessage, importPublicKey } from './crypto';
 
-// CRITICAL: Remember to change this to your Render URL before pushing to GitHub!
-// e.g., const socket = io('https://burner-backend-xyz.onrender.com');
-const socket = io('http://localhost:3001'); 
+// FIXED: Changed to https:// to prevent Mixed Content blocking on Vercel
+const socket = io('https://burner-chat-e2ee.onrender.com'); 
 
 function App() {
     // User State
@@ -61,11 +60,11 @@ function App() {
             // Encrypt the message using their public key
             const ciphertext = await encryptMessage(message, receiverKey);
             
-            // Emit the EXACT variables that match your React state
+            // FIXED: Using the exact correct variables defined in this file
             socket.emit('send_message', {
-                sender: username,       // Fixed variable name
-                receiver: receiver,     // Fixed variable name
-                ciphertext: ciphertext  // Fixed variable name
+                sender: username,
+                receiver: receiver, // This is your state variable for the receiver's name
+                ciphertext: ciphertext // This is the encrypted message you just generated
             });
 
             // Add the message to your own screen so you know it sent!
@@ -89,7 +88,8 @@ function App() {
                 <input 
                     placeholder="Enter your username" 
                     value={username}
-                    onChange={e => setUsername(e.target.value)} 
+                    // FIXED: Forces lowercase to prevent case-sensitive database misses
+                    onChange={e => setUsername(e.target.value.trim().toLowerCase())} 
                     style={{ padding: '10px', width: '100%', marginBottom: '10px' }} 
                 />
                 <button onClick={handleRegister} style={{ padding: '10px', width: '100%', background: '#333', color: 'white', border: 'none', cursor: 'pointer' }}>
@@ -113,8 +113,17 @@ function App() {
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-                <input placeholder="Receiver's Username (e.g., Bob)" onChange={e => setReceiver(e.target.value)} style={{ padding: '10px' }} />
-                <input placeholder="Paste Receiver's Public Key here..." onChange={e => setReceiverPublicKeyBase64(e.target.value)} style={{ padding: '10px' }} />
+                <input 
+                    placeholder="Receiver's Username (e.g., bob)" 
+                    // FIXED: Forces lowercase to prevent case-sensitive database misses
+                    onChange={e => setReceiver(e.target.value.trim().toLowerCase())} 
+                    style={{ padding: '10px' }} 
+                />
+                <input 
+                    placeholder="Paste Receiver's Public Key here..." 
+                    onChange={e => setReceiverPublicKeyBase64(e.target.value)} 
+                    style={{ padding: '10px' }} 
+                />
             </div>
             
             <div style={{ border: '2px solid #333', height: '300px', overflowY: 'auto', padding: '10px', backgroundColor: '#f9f9f9', marginBottom: '10px' }}>
